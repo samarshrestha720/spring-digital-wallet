@@ -9,9 +9,7 @@ import com.example.digital_wallet.repository.WalletRepository;
 import com.example.digital_wallet.service.UserService;
 import com.example.digital_wallet.webtoken.JwtService;
 
-import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +17,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,21 +41,23 @@ public class UserController {
     }
    
 
-    @GetMapping("/")
+    @GetMapping("/protected")
     public String rootGet() {
         return "User Controller Working!";
     }
 
     @GetMapping("/test")
     public String test() {
-        return "Test Endpoint working!";
+        return "Open Test Endpoint working!";
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUser(@PathVariable String id){
-        Optional<User> user = userRepository.findById(id);
-        if(user.isPresent()){
-            return ResponseEntity.ok(user.get());
+    @GetMapping("/")
+    public ResponseEntity<User> getUser(Authentication authentication){
+        String email = authentication.getName();
+        User user = userRepository.findByEmail(email);
+
+        if(user!=null){
+            return ResponseEntity.ok(user);
         }
         return ResponseEntity.notFound().build();
     }
