@@ -1,5 +1,7 @@
 package com.example.digital_wallet.controllers;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -31,4 +33,16 @@ public class TransactionController {
         return transactionService.transferMoney(senderEmail, receiverEmail, amount, description);
     }
 
+    @GetMapping("/senthistory")
+    public ResponseEntity<Set<Transaction>> getSentTransactionHistory(@RequestParam String email){
+        Set<Transaction> sentHistory = transactionService.getSentTransactionHistory(email);
+        return ResponseEntity.ok(sentHistory);
+    }
+
+    @GetMapping("/allhistory")
+    public ResponseEntity<Set<Transaction>> getHistory(Authentication authentication){
+        String email = (String)authentication.getPrincipal();
+        Set<Transaction> transactions = transactionService.getHistoryByEmail(email);
+        return ResponseEntity.ok(transactions);
+    }
 }

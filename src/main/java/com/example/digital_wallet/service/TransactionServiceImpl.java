@@ -74,4 +74,11 @@ public class TransactionServiceImpl implements TransactionService {
         return wallet.getSentTransactions();
     }
 
+
+    @Override
+    public Set<Transaction> getHistoryByEmail(String email) {
+        Wallet wallet = walletRepository.findByUserEmail(email);
+        return transactionRepository.findBySenderWalletOrReceiverWallet(wallet, wallet);
+    }
+
 }
