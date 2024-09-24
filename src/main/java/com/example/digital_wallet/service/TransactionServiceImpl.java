@@ -25,6 +25,7 @@ public class TransactionServiceImpl implements TransactionService {
     private TransactionRepository transactionRepository;
 
 
+    //TODO Refactor code. Seperate Wallet logic for reusability
     @Override
     public ResponseEntity<Transaction> transferMoney(String senderEmail, String receiverEmail, Double amount, String description) {
         Wallet senderWallet = walletRepository.findByUserEmail(senderEmail);
@@ -79,6 +80,16 @@ public class TransactionServiceImpl implements TransactionService {
     public Set<Transaction> getHistoryByEmail(String email) {
         Wallet wallet = walletRepository.findByUserEmail(email);
         return transactionRepository.findBySenderWalletOrReceiverWallet(wallet, wallet);
+    }
+
+
+    @Override
+    public ResponseEntity<String> checkBeforeTransfer(String senderEmail, String receiverEmail, Double amount,
+            String description) {
+            Wallet senderWallet = walletRepository.findByUserEmail(senderEmail);
+            Wallet receiverWallet = walletRepository.findByUserEmail(receiverEmail);
+
+            return ResponseEntity.ok().build();
     }
 
 }

@@ -27,6 +27,14 @@ public class TransactionController {
     }
     
 
+    //TODO complete endpoint after refactor of services are complete
+    @PostMapping("/checkbeforetransfer")
+    public ResponseEntity<String> checkBeforeTransfer(@RequestParam String receiverEmail, @RequestParam Double amount,@RequestParam String description, Authentication authentication){
+        String senderEmail = (String)authentication.getPrincipal();
+
+        return ResponseEntity.ok().body("Valid to Transfer");
+    }
+
     @PostMapping("/transfer")
     public ResponseEntity<Transaction> transferMoney(@RequestParam String receiverEmail, @RequestParam Double amount,@RequestParam String description, Authentication authentication){
         String senderEmail = (String)authentication.getPrincipal();
