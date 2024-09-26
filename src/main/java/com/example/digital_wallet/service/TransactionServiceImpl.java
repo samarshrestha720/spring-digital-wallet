@@ -1,10 +1,11 @@
 package com.example.digital_wallet.service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -17,64 +18,51 @@ import com.example.digital_wallet.repository.WalletRepository;
 @Service
 public class TransactionServiceImpl implements TransactionService {
 
-
     @Autowired
     private WalletRepository walletRepository;
 
-    @Autowired 
+    @Autowired
     private TransactionRepository transactionRepository;
 
+    @Autowired
+    private WalletService walletService;
 
-    //TODO Refactor code. Seperate Wallet logic for reusability
     @Override
-    public ResponseEntity<Transaction> transferMoney(String senderEmail, String receiverEmail, Double amount, String description) {
-        Wallet senderWallet = walletRepository.findByUserEmail(senderEmail);
-        Wallet receiverWallet = walletRepository.findByUserEmail(receiverEmail);
-        if(senderWallet==null){
-            return ResponseEntity.notFound().build();
+    public ResponseEntity<String> transferMoney(String senderEmail, String receiverEmail, Double amount,
+            String description, String pin) {
+        if (!walletService.isPinValid(senderEmail, pin)) {
+            return ResponseEntity.badRequest().body("Incorrect Pin");
         }
-        if(receiverEmail==null){
-            return ResponseEntity.notFound().build();
+        if (!walletService.isWalletValid(senderEmail)) {
+            return new ResponseEntity<String>("Sender Email Not Found", HttpStatus.NOT_FOUND);
         }
-        if(senderWallet.getBalance()<amount){
-            return ResponseEntity.badRequest().build();
+        if (!walletService.isWalletValid(receiverEmail)) {
+            return new ResponseEntity<String>("REceiver Email Not Found", HttpStatus.NOT_FOUND);
+        }
+        if (!walletService.hasSufficientBalance(senderEmail, amount)) {
+            return ResponseEntity.badRequest().body("Insufficient Balance");
         }
 
-        //Update wallet amounts
-        senderWallet.setBalance(senderWallet.getBalance()-amount);
-        receiverWallet.setBalance(receiverWallet.getBalance()+amount);
+        // Update wallet amounts
+        walletService.updateWalletBalances(senderEmail, receiverEmail, amount);
 
-        //create new transaction
-        Transaction transaction = new Transaction();
-        transaction.setSenderWallet(senderWallet);
-        transaction.setReceiverWallet(receiverWallet);
-        transaction.setAmount(amount);
-
-        transaction.setTransaction_type(TransactionType.TRANSFER);
-        transaction.setDescription(description);
-        transaction.setTimestamp(LocalDateTime.now());
-
-
-        transaction.setSenderBalanceAfter(senderWallet.getBalance());
-        transaction.setReceiverBalanceAfter(receiverWallet.getBalance());
-
-        return ResponseEntity.ok(transactionRepository.save(transaction));
+        // create new transaction
+        Transaction transaction = createNewTransaction(senderEmail, receiverEmail, amount, description);
+        return ResponseEntity.ok("Transaction successful with id: " + transaction.getId());
     }
 
-
+    // TODO sender and receiver transaction history returns both sent and received
+    // transaction on both endpoints. Must only return the requested ones
     @Override
     public Set<Transaction> getReceivedTransactionHistory(String email) {
-        Wallet wallet=walletRepository.findByUserEmail(email);
-        return wallet.getRecievedTransactions();
+        Wallet wallet = walletService.findWalletByEmail(email);
+        return transactionRepository.findByReceiverWallet(wallet);
     }
-
 
     @Override
     public Set<Transaction> getSentTransactionHistory(String email) {
-        Wallet wallet = walletRepository.findByUserEmail(email);
-        return wallet.getSentTransactions();
+        return walletService.findWalletByEmail(email).getSentTransactions();
     }
-
 
     @Override
     public Set<Transaction> getHistoryByEmail(String email) {
@@ -82,14 +70,43 @@ public class TransactionServiceImpl implements TransactionService {
         return transactionRepository.findBySenderWalletOrReceiverWallet(wallet, wallet);
     }
 
-
     @Override
     public ResponseEntity<String> checkBeforeTransfer(String senderEmail, String receiverEmail, Double amount,
             String description) {
-            Wallet senderWallet = walletRepository.findByUserEmail(senderEmail);
-            Wallet receiverWallet = walletRepository.findByUserEmail(receiverEmail);
+        if (!walletService.isWalletValid(senderEmail)) {
+            return new ResponseEntity<String>("Sender Email Invalid", HttpStatus.NOT_FOUND);
+        }
+        if (!walletService.isWalletValid(receiverEmail)) {
+            return new ResponseEntity<String>("Receiver Email Invalid", HttpStatus.NOT_FOUND);
+        }
+        if (!walletService.hasSufficientBalance(senderEmail, amount)) {
+            return ResponseEntity.badRequest().body("Insufficient Funds");
+        }
 
-            return ResponseEntity.ok().build();
+        return ResponseEntity.ok("Valid to Transfer");
+    }
+
+    @Override
+    public Transaction createNewTransaction(String senderEmail, String receiverEmail, Double amount,
+            String description) {
+        Transaction transaction = new Transaction();
+        transaction.setSenderWallet(walletService.findWalletByEmail(senderEmail));
+        transaction.setReceiverWallet(walletService.findWalletByEmail(receiverEmail));
+        transaction.setAmount(amount);
+
+        transaction.setTransaction_type(TransactionType.TRANSFER);
+        transaction.setDescription(description);
+        transaction.setTimestamp(LocalDateTime.now());
+
+        transaction.setSenderBalanceAfter(walletService.findWalletByEmail(senderEmail).getBalance());
+        transaction.setReceiverBalanceAfter(walletService.findWalletByEmail(receiverEmail).getBalance());
+
+        return transactionRepository.save(transaction);
+    }
+
+    @Override
+    public Optional<Transaction> getTransactionById(String id) {
+        return transactionRepository.findById(id);
     }
 
 }

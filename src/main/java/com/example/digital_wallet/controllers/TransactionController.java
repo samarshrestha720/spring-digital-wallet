@@ -1,6 +1,7 @@
 package com.example.digital_wallet.controllers;
 
 import java.util.Set;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,32 +26,45 @@ public class TransactionController {
     public String getTest(@RequestParam String testParam) {
         return new String(testParam);
     }
-    
 
-    //TODO complete endpoint after refactor of services are complete
     @PostMapping("/checkbeforetransfer")
-    public ResponseEntity<String> checkBeforeTransfer(@RequestParam String receiverEmail, @RequestParam Double amount,@RequestParam String description, Authentication authentication){
-        String senderEmail = (String)authentication.getPrincipal();
+    public ResponseEntity<String> checkBeforeTransfer(@RequestParam String receiverEmail, @RequestParam Double amount,
+            @RequestParam String description, Authentication authentication) {
+        String senderEmail = (String) authentication.getPrincipal();
+        return transactionService.checkBeforeTransfer(senderEmail, receiverEmail, amount, description);
 
-        return ResponseEntity.ok().body("Valid to Transfer");
     }
 
     @PostMapping("/transfer")
-    public ResponseEntity<Transaction> transferMoney(@RequestParam String receiverEmail, @RequestParam Double amount,@RequestParam String description, Authentication authentication){
-        String senderEmail = (String)authentication.getPrincipal();
-        return transactionService.transferMoney(senderEmail, receiverEmail, amount, description);
+    public ResponseEntity<String> transferMoney(@RequestParam String receiverEmail, @RequestParam Double amount,
+            @RequestParam String description, String pin, Authentication authentication) {
+        String senderEmail = (String) authentication.getPrincipal();
+        return transactionService.transferMoney(senderEmail, receiverEmail, amount, description, pin);
     }
 
     @GetMapping("/senthistory")
-    public ResponseEntity<Set<Transaction>> getSentTransactionHistory(@RequestParam String email){
+    public ResponseEntity<Set<Transaction>> getSentTransactionHistory(Authentication authentication) {
+        String email = (String) authentication.getPrincipal();
+        Set<Transaction> sentHistory = transactionService.getSentTransactionHistory(email);
+        return ResponseEntity.ok(sentHistory);
+    }
+
+    @GetMapping("/receivedhistory")
+    public ResponseEntity<Set<Transaction>> getReceiveTransactionHistory(Authentication authentication) {
+        String email = (String) authentication.getPrincipal();
         Set<Transaction> sentHistory = transactionService.getSentTransactionHistory(email);
         return ResponseEntity.ok(sentHistory);
     }
 
     @GetMapping("/allhistory")
-    public ResponseEntity<Set<Transaction>> getHistory(Authentication authentication){
-        String email = (String)authentication.getPrincipal();
+    public ResponseEntity<Set<Transaction>> getHistory(Authentication authentication) {
+        String email = (String) authentication.getPrincipal();
         Set<Transaction> transactions = transactionService.getHistoryByEmail(email);
         return ResponseEntity.ok(transactions);
+    }
+
+    @GetMapping("")
+    public ResponseEntity<Optional<Transaction>> getTransactionById(@RequestParam String id) {
+        return ResponseEntity.ok(transactionService.getTransactionById(id));
     }
 }

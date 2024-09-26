@@ -2,10 +2,19 @@ package com.example.digital_wallet.service;
 
 import com.example.digital_wallet.model.Wallet;
 
-//TODO add more wallet services that are used in the transferMoney method
 public interface WalletService {
+    // check if wallet exists
+    boolean isWalletValid(String email);
+
+    // check pin number before transaction
+    boolean isPinValid(String email, String pin);
+
     // Method to find and validate the wallet
     Wallet findWalletByEmail(String email);
+
     // Method to validate if the sender has enough balance
-    boolean hasSufficientBalance(Wallet wallet, Double amount);
+    boolean hasSufficientBalance(String email, Double amount);
+
+    // Method to update the wallet balance
+    Wallet updateWalletBalances(String senderEmail, String receiverEmail, Double amount);
 }
