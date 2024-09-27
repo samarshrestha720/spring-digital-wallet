@@ -3,6 +3,7 @@ package com.example.digital_wallet.service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Set;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -51,17 +52,15 @@ public class TransactionServiceImpl implements TransactionService {
         return ResponseEntity.ok("Transaction successful with id: " + transaction.getId());
     }
 
-    // TODO sender and receiver transaction history returns both sent and received
-    // transaction on both endpoints. Must only return the requested ones
     @Override
     public Set<Transaction> getReceivedTransactionHistory(String email) {
-        Wallet wallet = walletService.findWalletByEmail(email);
-        return transactionRepository.findByReceiverWallet(wallet);
+
+        return walletService.getRecievedTransactions(email);
     }
 
     @Override
     public Set<Transaction> getSentTransactionHistory(String email) {
-        return walletService.findWalletByEmail(email).getSentTransactions();
+        return walletService.getSentTransactions(email);
     }
 
     @Override

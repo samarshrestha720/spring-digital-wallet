@@ -52,8 +52,8 @@ public class TransactionController {
     @GetMapping("/receivedhistory")
     public ResponseEntity<Set<Transaction>> getReceiveTransactionHistory(Authentication authentication) {
         String email = (String) authentication.getPrincipal();
-        Set<Transaction> sentHistory = transactionService.getSentTransactionHistory(email);
-        return ResponseEntity.ok(sentHistory);
+        Set<Transaction> receivedHistory = transactionService.getReceivedTransactionHistory(email);
+        return ResponseEntity.ok(receivedHistory);
     }
 
     @GetMapping("/allhistory")

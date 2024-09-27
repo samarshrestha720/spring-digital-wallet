@@ -1,8 +1,11 @@
 package com.example.digital_wallet.service;
 
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.digital_wallet.model.Transaction;
 import com.example.digital_wallet.model.Wallet;
 import com.example.digital_wallet.repository.WalletRepository;
 
@@ -46,6 +49,16 @@ public class WalletServiceImpl implements WalletService {
     public boolean isPinValid(String email, String pin) {
         Wallet wallet = findWalletByEmail(email);
         return wallet.getPin().equals(pin);
+    }
+
+    @Override
+    public Set<Transaction> getRecievedTransactions(String email) {
+        return findWalletByEmail(email).getRecievedTransactions();
+    }
+
+    @Override
+    public Set<Transaction> getSentTransactions(String email) {
+        return findWalletByEmail(email).getSentTransactions();
     }
 
 }
