@@ -1,7 +1,6 @@
 package com.example.digital_wallet.service;
 
 import java.util.Set;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
