@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.digital_wallet.model.Transaction;
 import com.example.digital_wallet.service.TransactionService;
 
-@CrossOrigin("http://localhost:5173/")
+@CrossOrigin
 @RestController
 @RequestMapping("/api/transaction")
 public class TransactionController {

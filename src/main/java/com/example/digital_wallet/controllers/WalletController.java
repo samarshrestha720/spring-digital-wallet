@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.digital_wallet.model.Wallet;
 import com.example.digital_wallet.repository.WalletRepository;
 
-@CrossOrigin("http://localhost:5173/")
+@CrossOrigin
 @RestController
 @RequestMapping("/api/wallet")
 public class WalletController {
