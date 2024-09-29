@@ -26,22 +26,21 @@ public class SecurityConfig {
     public JwtFilter jwtFilter;
 
     @Bean
-	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-			.authorizeHttpRequests((request) -> request
-                .requestMatchers("/api/user/login","/api/user/register","/api/user/test").permitAll()
-				.anyRequest().authenticated()
-			)
-			.httpBasic(Customizer.withDefaults())
-            .csrf(csrf -> csrf.disable())
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-			
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests((request) -> request
+                        .requestMatchers("/api/user/login", "/api/user/register", "/api/user/test").permitAll()
+                        .anyRequest().authenticated())
+                .httpBasic(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
-		return http.build();
-	}
+        return http.build();
+    }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setPasswordEncoder(new BCryptPasswordEncoder(10));
         provider.setUserDetailsService(userDetailsService);
@@ -49,7 +48,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(){
+    public AuthenticationManager authenticationManager() {
         return new ProviderManager(authenticationProvider());
     }
 }
